@@ -4,6 +4,7 @@
   vars:
     sg_id: sg-01cf16e6da2a69f8b
     ami_id: ami-0220d79f3f480ecf5
+    domain_name: aws.roboshop.online
     env: dev
     instances:
       - mongodb
@@ -27,4 +28,13 @@
     ansible.builtin.debug:
       msg: "{{ ec2_output }}"
 
-
+  - name: create route53 record
+    amazon.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"
+      record: "{{ item.item}} -{{ env }}.{{ domain_name}}"
+      type: A
+      ttl: 1
+      value: 192.0.2.1
+      wait: true
+    loop: "{{ ec2_output.results }}"
